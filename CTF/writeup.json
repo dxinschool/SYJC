@@ -1,0 +1,52 @@
+{
+  "generated_at": "2026-03-08",
+  "collection": "PUCTF26",
+  "generated_by": "assistant",
+  "writeups": [
+    {
+      "challenge": "EncryptFile",
+      "category": "Reverse Engineering",
+      "solved_date": "2026-03-08",
+      "author": "DXuwu",
+      "path": "PUCTF26/EncryptFile.md",
+      "tags": [],
+      "notes": "Update category/solved_date when known"
+    },
+    {
+      "challenge": "good_k1k1_bad_k1k1",
+      "category": "Artificial Intelligence",
+      "solved_date": "2026-03-08",
+      "author": "DXuwu",
+      "path": "PUCTF26/good_k1k1_bad_k1k1.md",
+      "tags": [],
+      "notes": ""
+    },
+    {
+      "challenge": "It_Takes_Two",
+      "category": "Penetration",
+      "solved_date": "2026-03-08",
+      "author": "DXuwu",
+      "path": "PUCTF26/It_Takes_Two.md",
+      "tags": [],
+      "notes": ""
+    },
+    {
+      "challenge": "Leaky_Revenge",
+      "category": "Web Exploitation",
+      "solved_date": "2026-03-08",
+      "author": "DXuwu",
+      "path": "PUCTF26/Leaky_Revenge.md",
+      "tags": [],
+      "notes": ""
+    },
+    {
+      "challenge": "The_Secret_of_The_Emanator_of_Elation",
+      "category": "Forensics",
+      "solved_date": "2026-03-08",
+      "author": "DXuwu",
+      "path": "PUCTF26/The_Secret_of_The_Emanator_of_Elation.md",
+      "tags": [],
+      "notes": ""
+    }
+  ]
+}
