@@ -1,0 +1,38 @@
+@import "tailwindcss";
+
+/* Add this line to tell Tailwind to look for the "dark" class instead of OS settings */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* --- Custom Animations --- */
+@keyframes fadeUp {
+  from { 
+    opacity: 0; 
+    transform: translateY(30px) scale(0.98); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0) scale(1); 
+  }
+}
+
+.animate-fade-up {
+  animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
+}
+
+/* --- Animation Delays --- */
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
+
+/* --- SVG Chart Animation --- */
+@keyframes dash {
+  to { stroke-dashoffset: 0; }
+}
+
+/* --- Global Utilities --- */
+/* Responsive smooth shifting */
+.smooth-layout {
+  transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
