@@ -836,14 +836,21 @@ export default function App() {
         parsedArray = deduped;
         
         const normalizedData = parsedArray.map((post, index) => {
-          // Prefer an absolute `url` if provided, then absolute `path`, then
-          // treat `path` as a repo-relative path inside this repo.
-          const isAbsolute = (s) => typeof s === 'string' && /^https?:\/\//i.test(s);
+          // Construct raw URL:
+          // - If `post.path` is present and absolute, use it directly.
+          // - If `post.path` is present and relative, treat it as repo-relative
+          //   inside dxinschool/SYJC under `CTF/` (same as the blog App.jsx approach).
+          // - Otherwise fall back to `post.url` or `post.link`.
           let rawUrl = '';
-          if (isAbsolute(post.url)) rawUrl = post.url;
-          else if (isAbsolute(post.path)) rawUrl = post.path;
-          else if (post.path) rawUrl = `https://raw.githubusercontent.com/dxinschool/SYJC/main/CTF/${post.path}`;
-          else rawUrl = post.url || post.link || '';
+          if (post.path) {
+            if (typeof post.path === 'string' && /^https?:\/\//i.test(post.path)) {
+              rawUrl = post.path;
+            } else {
+              rawUrl = `https://raw.githubusercontent.com/dxinschool/SYJC/main/CTF/${post.path}`;
+            }
+          } else {
+            rawUrl = post.url || post.link || '';
+          }
 
           return {
             ...post,
