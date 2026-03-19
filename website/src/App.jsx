@@ -195,6 +195,47 @@ const parseMarkdown = (mdString) => {
       continue;
     }
 
+    if (line.trim().startsWith('$$')) {
+      // Multi-line KaTeX block: collect until closing $$
+      flushList();
+      let mathBlock = '';
+      // If the opening $$ has content on the same line
+      const openLine = line.replace(/^\$\$\s?/, '');
+      if (openLine.endsWith('$$')) {
+        mathBlock = openLine.replace(/\$\$$/, '').trim();
+      } else if (line.trim() === '$$') {
+        // consume following lines until a line that is exactly $$
+        let j = i + 1;
+        while (j < lines.length && lines[j].trim() !== '$$') {
+          mathBlock += lines[j] + '\n';
+          j++;
+        }
+        i = Math.max(i, j); // advance outer loop to closing $$ (will be incremented by for-loop)
+      } else {
+        // opening $$ with content but no closing on same line: collect until a closing $$ anywhere
+        let j = i + 1;
+        while (j < lines.length && lines[j].indexOf('$$') === -1) {
+          mathBlock += lines[j] + '\n';
+          j++;
+        }
+        if (j < lines.length) {
+          // append remainder of closing line before the $$
+          mathBlock += lines[j].replace(/\$\$/g, '') + '\n';
+          i = j; // advance outer loop
+        } else {
+          i = j - 1;
+        }
+      }
+
+      try {
+        const html = katex.renderToString(mathBlock, { displayMode: true, throwOnError: false });
+        elements.push(<div key={`math-${i}`} className="my-6 katex-block" dangerouslySetInnerHTML={{ __html: html }} />);
+      } catch (e) {
+        elements.push(<pre key={`math-${i}`} className="my-6">{mathBlock}</pre>);
+      }
+      continue;
+    }
+
     if (line.trim() === '---' || line.trim() === '***' || line.trim() === '___') {
       flushList();
       elements.push(<hr key={i} className="my-8 sm:my-10 border-t-2 border-[#0b2636]/10" />);
