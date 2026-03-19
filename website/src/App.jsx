@@ -1,5 +1,90 @@
-import React, { useState, useEffect } from 'react';
-import { Shield, ChevronRight, ChevronLeft, ArrowRight, User, Search, Instagram } from 'lucide-react';
+import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
+import { Shield, ChevronRight, ChevronLeft, ArrowRight, User, Search, Instagram, ArrowUp } from 'lucide-react';
+
+// --- SMOOTH SCROLL HOOK ---
+const SmoothScroll = ({ children }) => {
+  const scrollingContainerRef = useRef(null);
+  const [pageHeight, setPageHeight] = useState(0);
+  const [isDesktop, setIsDesktop] = useState(true);
+
+  // Detect if device is a non-touch desktop for optimal performance
+  useEffect(() => {
+    const checkDevice = () => {
+      setIsDesktop(window.innerWidth >= 1024 && !window.matchMedia("(pointer: coarse)").matches);
+    };
+    checkDevice();
+    window.addEventListener('resize', checkDevice);
+    return () => window.removeEventListener('resize', checkDevice);
+  }, []);
+
+  // Sync virtual container height with native scrollbar
+  useLayoutEffect(() => {
+    if (!isDesktop) return;
+
+    const updateHeight = () => {
+      if (scrollingContainerRef.current) {
+        setPageHeight(scrollingContainerRef.current.getBoundingClientRect().height);
+      }
+    };
+
+    // Delay slightly to ensure images/fonts are loaded
+    setTimeout(updateHeight, 100);
+    
+    const resizeObserver = new ResizeObserver(updateHeight);
+    if (scrollingContainerRef.current) {
+      resizeObserver.observe(scrollingContainerRef.current);
+    }
+    
+    return () => resizeObserver.disconnect();
+  }, [children, isDesktop]);
+
+  // Physics-based rendering loop
+  useEffect(() => {
+    if (!isDesktop) return;
+
+    let currentY = window.scrollY;
+    let targetY = window.scrollY;
+    let rafId;
+
+    const render = () => {
+      targetY = window.scrollY;
+      // Lerp formula for inertia (0.08 is the friction/easing factor)
+      currentY = currentY + (targetY - currentY) * 0.08;
+      
+      if (Math.abs(targetY - currentY) < 0.01) {
+        currentY = targetY;
+      }
+
+      if (scrollingContainerRef.current) {
+        scrollingContainerRef.current.style.transform = `translate3d(0, -${currentY}px, 0)`;
+      }
+      rafId = requestAnimationFrame(render);
+    };
+    
+    render();
+    return () => cancelAnimationFrame(rafId);
+  }, [isDesktop, pageHeight]);
+
+  if (!isDesktop) {
+    return <>{children}</>;
+  }
+
+  return (
+    <>
+      {/* Invisible spacer to force the native scrollbar */}
+      <div style={{ height: `${pageHeight}px` }} className="w-full opacity-0 pointer-events-none transition-all duration-300" />
+      
+      {/* The actual moving layer */}
+      <div 
+        ref={scrollingContainerRef} 
+        className="fixed top-0 left-0 w-full will-change-transform z-10"
+      >
+        {children}
+      </div>
+    </>
+  );
+};
+
 
 // --- MARKDOWN PARSER ---
 const parseInline = (text) => {
@@ -209,7 +294,7 @@ const SubPageView = ({ bgText, title, sectionTitle, children }) => (
     
     <div className="w-full h-6 sm:h-8 md:h-10 bg-[#488ebf]"></div>
 
-    <div className="w-full pl-4 sm:pl-6 md:pl-12 pr-[calc(1rem+80px)] md:pr-[calc(3rem+80px)] py-8 sm:py-16 flex-grow flex justify-center">
+    <div className="w-full px-4 sm:px-6 md:px-12 py-8 sm:py-16 flex-grow flex justify-center">
       <div className="bg-white w-full max-w-5xl relative p-6 sm:p-8 md:p-16 text-[#0b2636] shadow-sm min-h-[500px]">
         {sectionTitle && (
           <div className="absolute top-0 left-0 bg-[#488ebf] text-white px-4 sm:px-8 py-2 sm:py-3 text-xs sm:text-sm md:text-base font-bold tracking-widest z-10">
@@ -256,8 +341,8 @@ const HomeView = ({ navigate, currentPage }) => (
         </div>
       </div>
 
-      <div className="flex-1 relative h-[70vh] lg:h-full flex items-center justify-center overflow-hidden pl-4 pr-[calc(1rem+80px)] md:pr-[calc(1rem+80px)] lg:px-4">
-        <div className="absolute inset-0 z-0 bg-[url('https://scontent-hkg1-2.cdninstagram.com/v/t51.82787-15/627934398_17862824781583144_676731908360055250_n.jpg?stp=dst-jpg_e35_tt6&_nc_cat=104&ig_cache_key=MzgyNjY3MjQ2NDczOTQyMzQ5Ng%3D%3D.3-ccb7-5&ccb=7-5&_nc_sid=58cdad&efg=eyJ2ZW5jb2RlX3RhZyI6InhwaWRzLjE0NDB4MTkyMC5zZHIuQzMifQ%3D%3D&_nc_ohc=Y1BvmLJPAVwQ7kNvwFnnKeU&_nc_oc=AdkR6-ZanVjDayw0txOgGUVUw96Dwk4d_un0TNEtsn7OIUDAiIGjYuXztGEpQT3iXkI&_nc_ad=z-m&_nc_cid=0&_nc_zt=23&_nc_ht=scontent-hkg1-2.cdninstagram.com&_nc_gid=EK-ck1zYkUX-kKcSvYQ7mQ&_nc_ss=8&oh=00_AfySCFf4aojj1-4320RgEyqEd4NmWhltzgyeueWG-XsmLQ&oe=69C03698')] bg-cover bg-center opacity-40 transition-transform duration-1000 group-hover:scale-105 mix-blend-luminosity"></div>
+      <div className="flex-1 relative h-[70vh] lg:h-full flex items-center justify-center overflow-hidden px-4 lg:px-8">
+        <div className="absolute inset-0 z-0 bg-[url('https://scontent-hkg1-2.cdninstagram.com/v/t51.82787-15/627934398_17862824781583144_676731908360055250_n.jpg?stp=dst-jpg_e35_tt6&_nc_cat=104&ig_cache_key=MzgyNjY3MjQ2NDczOTQyMzQ5Ng%3D%3D.3-ccb7-5&ccb=7-5&_nc_sid=58cdad&efg=eyJ2ZW5jb2RlX3RhZyI6InhwaWRzLjE0NDB4MTkyMC5zZHIuQzMifQ%3D%3D&_nc_ohc=Y1BvmLJPAVwQ7kNvwFnnKeU&_nc_oc=AdkR6-ZanVjDayw0txOgGUVUw96Dwk4d_un0TNEtsn7OIUDAiIGjYuXztGEpQT3iXkI&_nc_ad=z-m&_nc_cid=0&_nc_zt=23&_nc_ht=scontent-hkg1-2.cdninstagram.com&_nc_gid=EK-ck1zYkUX-kKcSvYQ7mQ&_nc_ss=8&oh=00_AfySCFf4aojj1-4320RgEyqEd4NmWhltzgyeueWG-XsmLQ&oe=69C03698')] bg-cover bg-center opacity-80 transition-transform duration-1000 group-hover:scale-105"></div>
         <div className="absolute inset-0 z-0 bg-gradient-to-t lg:bg-gradient-to-l from-[#0b1820] via-[#0b1820]/60 to-[#0b1820]/80"></div>
         
         <div className="z-10 text-center flex flex-col items-center">
@@ -278,7 +363,7 @@ const HomeView = ({ navigate, currentPage }) => (
 
     <div className="w-full bg-[#cbd6dc] flex flex-col relative z-20">
        <div className="w-full h-8 sm:h-10 bg-[#488ebf]"></div>
-       <div className="w-full pl-4 sm:pl-6 md:pl-12 pr-[calc(1rem+80px)] md:pr-[calc(3rem+80px)] py-10 sm:py-16 flex justify-center">
+       <div className="w-full px-4 sm:px-6 md:px-12 py-10 sm:py-16 flex justify-center">
           <div className="bg-white w-full max-w-5xl relative p-6 sm:p-8 md:p-16 text-[#0b2636] shadow-sm">
              <div className="absolute top-0 left-0 bg-[#488ebf] text-white px-4 sm:px-8 py-2 sm:py-3 text-xs sm:text-sm font-bold tracking-widest">
                 LATEST UPDATES
@@ -438,6 +523,20 @@ const PostDetailView = ({ post, onBack }) => {
             parseMarkdown(content)
           )}
         </div>
+
+        {!loading && (
+          <div className="mt-16 sm:mt-24 pt-8 border-t border-[#0b2636]/10 flex justify-center pb-8">
+            <button 
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              className="flex flex-col items-center gap-3 text-[#0b2636]/40 hover:text-[#3c8ebd] transition-all group"
+            >
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border border-current flex items-center justify-center group-hover:-translate-y-2 transition-transform duration-300">
+                <ArrowUp className="w-5 h-5 sm:w-6 sm:h-6" />
+              </div>
+              <span className="text-[10px] sm:text-xs font-bold tracking-[0.2em] uppercase">Back to Top</span>
+            </button>
+          </div>
+        )}
       </div>
     </SubPageView>
   );
@@ -514,7 +613,6 @@ export default function App() {
 
   useEffect(() => {
     setIsLoadingWriteups(true);
-    // Fetch the writeup.json from the GitHub repo, using a cache-buster (?t=) to bypass GitHub's CDN cache
     fetch('https://raw.githubusercontent.com/dxinschool/SYJC/main/CTF/writeup.json?t=' + Date.now())
       .then(res => {
         if (!res.ok) throw new Error("Failed to fetch JSON");
@@ -528,20 +626,16 @@ export default function App() {
           if (Array.isArray(data.writeups)) {
             parsedArray = data.writeups;
           } else {
-            // Try to extract arrays if the JSON is structured by folders/categories
             Object.values(data).forEach(val => {
               if (Array.isArray(val)) parsedArray.push(...val);
             });
-            // Fallback if it's a single flat object
             if (parsedArray.length === 0 && Object.keys(data).length > 0) {
               parsedArray = [data];
             }
           }
         }
         
-        // Normalize JSON data so we guarantee the exact keys expected by our UI
         const normalizedData = parsedArray.map((post, index) => {
-          // Construct the full raw GitHub URL using the relative path from the JSON
           const rawUrl = post.path 
             ? `https://raw.githubusercontent.com/dxinschool/SYJC/main/CTF/${post.path}`
             : (post.url || post.link || '');
@@ -578,72 +672,74 @@ export default function App() {
   return (
     <div className="flex w-full min-h-screen bg-[#0b1820] font-sans selection:bg-[#3c8ebd] selection:text-white overflow-x-hidden">
       
-      {/* MAIN CONTENT AREA */}
-      <div className="flex-1 flex flex-col min-h-screen relative w-full">
-        <div className="flex-1 w-full flex flex-col">
-          {currentPage === 'home' && <HomeView navigate={handleNavigate} currentPage={currentPage} />}
-          {currentPage === 'writeups' && !activePost && <WriteupsView onPostClick={setActivePost} writeups={writeups} isLoading={isLoadingWriteups} />}
-          {currentPage === 'writeups' && activePost && <PostDetailView post={activePost} onBack={() => setActivePost(null)} />}
-          {currentPage === 'achievements' && <AchievementsView />}
-          {currentPage === 'about' && <AboutView />}
-          {currentPage === 'contact' && <ContactView />}
-        </div>
+      {/* Wrapped the main content area with the new SmoothScroll component */}
+      <SmoothScroll>
+        {/* MAIN CONTENT AREA */}
+        <div className="flex-1 flex flex-col min-h-screen relative w-full bg-[#0b1820]">
+          <div className="flex-1 w-full flex flex-col">
+            {currentPage === 'home' && <HomeView navigate={handleNavigate} currentPage={currentPage} />}
+            {currentPage === 'writeups' && !activePost && <WriteupsView onPostClick={setActivePost} writeups={writeups} isLoading={isLoadingWriteups} />}
+            {currentPage === 'writeups' && activePost && <PostDetailView post={activePost} onBack={() => setActivePost(null)} />}
+            {currentPage === 'achievements' && <AchievementsView />}
+            {currentPage === 'about' && <AboutView />}
+            {currentPage === 'contact' && <ContactView />}
+          </div>
 
-        {/* FOOTER */}
-        <footer className="bg-[#0b1820] text-white py-10 sm:py-12 px-6 sm:px-8 w-full border-t-[6px] sm:border-t-[8px] border-[#3c8ebd] z-30 pr-[calc(1.5rem+80px)] md:pr-[calc(2rem+80px)]">
-          <div className="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-center space-y-6 md:space-y-0">
-            <div className="flex flex-col text-center md:text-left">
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-black italic tracking-widest text-[#3c8ebd]">SYJC TEAM!!!!!</h2>
-              <h3 className="text-base sm:text-lg md:text-xl font-bold italic text-white mt-1">It's MyCTF!!!!!</h3>
-            </div>
-            
-            <div className="flex flex-wrap justify-center gap-4 sm:gap-6 md:gap-8 text-xs sm:text-sm font-bold tracking-widest text-slate-300 items-center">
-              <button onClick={() => handleNavigate('home')} className={`transition-colors py-1 ${currentPage === 'home' ? 'text-white' : 'hover:text-white'}`}>
-                {currentPage === 'home' ? '➤ HOME' : 'HOME'}
-              </button>
-              <button onClick={() => handleNavigate('writeups')} className={`transition-colors py-1 ${currentPage === 'writeups' ? 'text-white' : 'hover:text-white'}`}>
-                {currentPage === 'writeups' ? '➤ WRITEUPS' : 'WRITEUPS'}
-              </button>
-              <button onClick={() => handleNavigate('about')} className={`transition-colors py-1 ${currentPage === 'about' ? 'text-white' : 'hover:text-white'}`}>
-                {currentPage === 'about' ? '➤ ABOUT' : 'ABOUT'}
-              </button>
-              <button onClick={() => handleNavigate('contact')} className={`transition-colors py-1 ${currentPage === 'contact' ? 'text-white' : 'hover:text-white'}`}>
-                {currentPage === 'contact' ? '➤ CONTACT' : 'CONTACT'}
-              </button>
+          {/* FOOTER */}
+          <footer className="bg-[#0b1820] text-white py-10 sm:py-12 px-6 sm:px-8 lg:px-12 w-full border-t-[6px] sm:border-t-[8px] border-[#3c8ebd] z-30 relative">
+            <div className="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-center space-y-6 md:space-y-0">
+              <div className="flex flex-col text-center md:text-left">
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-black italic tracking-widest text-[#3c8ebd]">SYJC TEAM!!!!!</h2>
+                <h3 className="text-base sm:text-lg md:text-xl font-bold italic text-white mt-1">It's MyCTF!!!!!</h3>
+              </div>
               
-              <div className="w-px h-4 bg-slate-700/50 hidden sm:block mx-1"></div>
-              
-              <a 
-                href="https://www.instagram.com/singyin_jockey_club/" 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="text-slate-400 hover:text-white transition-colors p-1"
-                aria-label="Instagram"
-              >
-                <Instagram className="w-5 h-5 sm:w-6 sm:h-6" />
-              </a>
+              <div className="flex flex-wrap justify-center gap-4 sm:gap-6 md:gap-8 text-xs sm:text-sm font-bold tracking-widest text-slate-300 items-center">
+                <button onClick={() => handleNavigate('home')} className={`transition-colors py-1 ${currentPage === 'home' ? 'text-white' : 'hover:text-white'}`}>
+                  {currentPage === 'home' ? '➤ HOME' : 'HOME'}
+                </button>
+                <button onClick={() => handleNavigate('writeups')} className={`transition-colors py-1 ${currentPage === 'writeups' ? 'text-white' : 'hover:text-white'}`}>
+                  {currentPage === 'writeups' ? '➤ WRITEUPS' : 'WRITEUPS'}
+                </button>
+                <button onClick={() => handleNavigate('about')} className={`transition-colors py-1 ${currentPage === 'about' ? 'text-white' : 'hover:text-white'}`}>
+                  {currentPage === 'about' ? '➤ ABOUT' : 'ABOUT'}
+                </button>
+                <button onClick={() => handleNavigate('contact')} className={`transition-colors py-1 ${currentPage === 'contact' ? 'text-white' : 'hover:text-white'}`}>
+                  {currentPage === 'contact' ? '➤ CONTACT' : 'CONTACT'}
+                </button>
+                
+                <div className="w-px h-4 bg-slate-700/50 hidden sm:block mx-1"></div>
+                
+                <a 
+                  href="https://www.instagram.com/singyin_jockey_club/" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="text-slate-400 hover:text-white transition-colors p-1"
+                  aria-label="Instagram"
+                >
+                  <Instagram className="w-5 h-5 sm:w-6 sm:h-6" />
+                </a>
+              </div>
             </div>
-          </div>
-          <div className="max-w-5xl mx-auto mt-8 sm:mt-10 pt-4 sm:pt-6 border-t border-slate-700/30 text-[10px] sm:text-xs text-slate-500 font-mono text-center">
-            © {new Date().getFullYear()} SYJC TEAM! All rights reserved.
-          </div>
-        </footer>
-      </div>
+            <div className="max-w-5xl mx-auto mt-8 sm:mt-10 pt-4 sm:pt-6 border-t border-slate-700/30 text-[10px] sm:text-xs text-slate-500 font-mono text-center">
+              © {new Date().getFullYear()} SYJC TEAM! All rights reserved.
+            </div>
+          </footer>
+        </div>
+      </SmoothScroll>
 
       {/* --- GLOBAL MENU TRIGGER / CLOSE BUTTON --- */}
       <div 
-        className={`fixed top-0 right-0 z-[100] bg-[#3388bb] cursor-pointer transition-all duration-200 flex flex-col items-center pt-[32px] hover:bg-[#2d76a3] ${isMenuOpen ? '' : 'shadow-[-4px_0_15px_rgba(0,0,0,0.3)]'}`} 
-        style={{ width: '80px', height: '160px' }}
+        className={`fixed top-0 right-0 z-[100] bg-[#3388bb] cursor-pointer transition-all duration-200 flex flex-col items-center justify-center hover:bg-[#2d76a3] w-[50px] sm:w-[60px] h-[110px] sm:h-[130px] ${isMenuOpen ? '' : 'shadow-[-4px_0_15px_rgba(0,0,0,0.3)]'}`} 
         onClick={() => setIsMenuOpen(!isMenuOpen)}
       >
-        <div className="relative w-6 h-6 mb-8 flex items-center justify-center">
-          <div className={`absolute w-full h-[2px] bg-white transition-all duration-300 ${isMenuOpen ? 'rotate-45' : '-translate-y-[6px]'}`}></div>
+        <div className="relative w-5 h-5 sm:w-6 sm:h-6 mb-4 sm:mb-5 flex items-center justify-center shrink-0">
+          <div className={`absolute w-full h-[2px] bg-white transition-all duration-300 ${isMenuOpen ? 'rotate-45' : '-translate-y-[5px] sm:-translate-y-[6px]'}`}></div>
           <div className={`absolute w-full h-[2px] bg-white transition-all duration-300 ${isMenuOpen ? 'opacity-0' : 'opacity-100'}`}></div>
-          <div className={`absolute w-full h-[2px] bg-white transition-all duration-300 ${isMenuOpen ? '-rotate-45' : 'translate-y-[6px]'}`}></div>
+          <div className={`absolute w-full h-[2px] bg-white transition-all duration-300 ${isMenuOpen ? '-rotate-45' : 'translate-y-[5px] sm:translate-y-[6px]'}`}></div>
         </div>
-        <div className="relative h-20 w-full flex justify-center">
-           <span className={`absolute text-white text-[13px] font-black tracking-[0.4em] leading-none uppercase select-none transition-opacity duration-300 ${isMenuOpen ? 'opacity-100' : 'opacity-0'}`} style={{ writingMode: 'vertical-rl', transform: 'scaleY(1.25)' }}>CLOSE</span>
-           <span className={`absolute text-white text-[13px] font-black tracking-[0.4em] leading-none uppercase select-none transition-opacity duration-300 ${isMenuOpen ? 'opacity-0' : 'opacity-100'}`} style={{ writingMode: 'vertical-rl', transform: 'scaleY(1.25)' }}>MENU</span>
+        <div className="relative h-14 sm:h-16 w-full flex justify-center items-center shrink-0">
+           <span className={`absolute text-white text-[10px] sm:text-[11px] font-black tracking-[0.3em] sm:tracking-[0.4em] leading-none uppercase select-none transition-opacity duration-300 ${isMenuOpen ? 'opacity-100' : 'opacity-0'}`} style={{ writingMode: 'vertical-rl', transform: 'scaleY(1.25)' }}>CLOSE</span>
+           <span className={`absolute text-white text-[10px] sm:text-[11px] font-black tracking-[0.3em] sm:tracking-[0.4em] leading-none uppercase select-none transition-opacity duration-300 ${isMenuOpen ? 'opacity-0' : 'opacity-100'}`} style={{ writingMode: 'vertical-rl', transform: 'scaleY(1.25)' }}>MENU</span>
         </div>
       </div>
 
@@ -654,25 +750,27 @@ export default function App() {
         {/* Panel matching the menu button color */}
         <div className={`absolute right-0 top-0 bottom-0 w-[85%] sm:w-[70%] max-w-[460px] bg-[#3388bb] transform transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] flex flex-col shadow-[-10px_0_30px_rgba(0,0,0,0.5)] ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
           
-          {/* Menu Links with right padding to avoid the blue bar */}
-          <div className="flex-1 pl-8 sm:pl-12 md:pl-16 pr-8 sm:pr-[calc(2rem+80px)] md:pr-[calc(4rem+80px)] flex flex-col justify-center mt-[160px] sm:mt-0">
-             <div className="space-y-12 sm:space-y-16">
-                <div>
-                  <h4 className="text-white/80 text-[10px] sm:text-[11px] font-black tracking-[0.4em] mb-8 sm:mb-10 uppercase border-b border-white/30 pb-4">Navigation</h4>
-                  <NavGrid navigate={handleNavigate} currentPage={currentPage} isSidebar={false} />
-                </div>
+          {/* Menu Links with right padding to avoid the top-right button */}
+          <div className="flex-1 overflow-y-auto pl-8 sm:pl-12 md:pl-16 pr-[70px] sm:pr-[90px]">
+             <div className="min-h-full flex flex-col justify-center py-12 pt-[120px] sm:pt-16 pb-20">
+                <div className="space-y-12 sm:space-y-16">
+                  <div>
+                    <h4 className="text-white/80 text-[10px] sm:text-[11px] font-black tracking-[0.4em] mb-8 sm:mb-10 uppercase border-b border-white/30 pb-4">Navigation</h4>
+                    <NavGrid navigate={handleNavigate} currentPage={currentPage} isSidebar={false} />
+                  </div>
                 
-                <div>
-                  <h4 className="text-white/80 text-[10px] sm:text-[11px] font-black tracking-[0.4em] mb-6 uppercase border-b border-white/30 pb-4">Socials</h4>
-                  <a 
-                    href="https://www.instagram.com/singyin_jockey_club/" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-3 text-white/70 hover:text-white transition-colors"
-                  >
-                    <Instagram className="w-5 h-5 sm:w-6 sm:h-6" />
-                    <span className="tracking-[0.15em] font-medium text-[11px] sm:text-[13px] uppercase">Instagram</span>
-                  </a>
+                  <div>
+                    <h4 className="text-white/80 text-[10px] sm:text-[11px] font-black tracking-[0.4em] mb-6 uppercase border-b border-white/30 pb-4">Socials</h4>
+                    <a 
+                      href="https://www.instagram.com/singyin_jockey_club/" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-3 text-white/70 hover:text-white transition-colors"
+                    >
+                      <Instagram className="w-5 h-5 sm:w-6 sm:h-6" />
+                      <span className="tracking-[0.15em] font-medium text-[11px] sm:text-[13px] uppercase">Instagram</span>
+                    </a>
+                  </div>
                 </div>
              </div>
           </div>
