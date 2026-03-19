@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
-import { Shield, ChevronRight, ChevronLeft, ArrowRight, User, Search, Instagram, ArrowUp } from 'lucide-react';
+import { Shield, ChevronRight, ChevronLeft, ArrowRight, User, Search, Instagram, ArrowUp, Filter } from 'lucide-react';
 
 // --- SMOOTH SCROLL HOOK ---
 const SmoothScroll = ({ children }) => {
@@ -404,32 +404,66 @@ const WriteupsView = ({ onPostClick, writeups = [], isLoading }) => {
 
   return (
     <SubPageView bgText="Writeups & Docs" title="攻略・解説" sectionTitle="WRITEUPS">
-      <div className="flex flex-col lg:flex-row gap-4 mb-8 sm:mb-10 pb-6 sm:pb-8 border-b border-[#0b2636]/10">
-        <div className="flex-1 relative">
-          <Search className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-[#0b2636]/40" />
-          <input 
-            type="text" 
-            placeholder="Search writeups..." 
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-3 bg-white border-2 border-[#cbd6dc]/50 rounded-lg focus:outline-none focus:border-[#3c8ebd] focus:ring-4 focus:ring-[#3c8ebd]/10 transition-all text-sm sm:text-base text-[#0b2636] placeholder:text-[#0b2636]/40 font-medium"
-          />
+      
+      {/* SEARCH BAR */}
+      <div className="relative mb-6">
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#0b2636]/40" />
+        <input 
+          type="text" 
+          placeholder="Search by title, keyword, or summary..." 
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full pl-12 pr-4 py-3.5 bg-white border-2 border-[#cbd6dc]/50 rounded-xl focus:outline-none focus:border-[#3c8ebd] focus:ring-4 focus:ring-[#3c8ebd]/10 transition-all text-sm sm:text-base text-[#0b2636] placeholder:text-[#0b2636]/40 font-medium shadow-sm"
+        />
+      </div>
+      
+      {/* FILTERS CONTAINER */}
+      <div className="bg-[#cbd6dc]/15 rounded-xl border border-[#cbd6dc]/40 p-5 sm:p-6 mb-10 pb-6 shadow-sm">
+        <div className="flex items-center gap-2 mb-5 text-[#0b2636]/60 border-b border-[#cbd6dc]/40 pb-3">
+          <Filter className="w-4 h-4" />
+          <span className="text-xs font-black tracking-widest uppercase">Filter Options</span>
         </div>
-        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-          <select 
-            value={selectedCategory} 
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            className="py-2.5 sm:py-3 px-3 sm:px-4 bg-white border-2 border-[#cbd6dc]/50 rounded-lg focus:outline-none focus:border-[#3c8ebd] focus:ring-4 focus:ring-[#3c8ebd]/10 transition-all text-sm sm:text-base text-[#0b2636] font-medium min-w-[140px] cursor-pointer"
-          >
-            {categories.map(c => <option key={c} value={c}>{c === 'ALL' ? 'All Categories' : c}</option>)}
-          </select>
-          <select 
-            value={selectedAuthor} 
-            onChange={(e) => setSelectedAuthor(e.target.value)}
-            className="py-2.5 sm:py-3 px-3 sm:px-4 bg-white border-2 border-[#cbd6dc]/50 rounded-lg focus:outline-none focus:border-[#3c8ebd] focus:ring-4 focus:ring-[#3c8ebd]/10 transition-all text-sm sm:text-base text-[#0b2636] font-medium min-w-[140px] cursor-pointer"
-          >
-            {authors.map(a => <option key={a} value={a}>{a === 'ALL' ? 'All Authors' : a}</option>)}
-          </select>
+        
+        <div className="flex flex-col gap-6">
+          {/* Category Pills */}
+          <div className="flex flex-col md:flex-row md:items-start gap-3 md:gap-6">
+            <span className="text-[10px] font-black tracking-widest text-[#3c8ebd] uppercase shrink-0 md:w-20 md:pt-2">Category</span>
+            <div className="flex flex-wrap gap-2">
+              {categories.map(c => (
+                <button
+                  key={c}
+                  onClick={() => setSelectedCategory(c)}
+                  className={`px-3.5 py-1.5 text-xs sm:text-sm font-bold tracking-wider rounded-lg transition-all ${
+                    selectedCategory === c
+                      ? 'bg-[#3c8ebd] text-white shadow-md shadow-[#3c8ebd]/20 border-transparent'
+                      : 'bg-white border border-[#cbd6dc] text-[#0b2636]/60 hover:border-[#3c8ebd]/50 hover:text-[#0b2636]'
+                  }`}
+                >
+                  {c === 'ALL' ? 'All Categories' : c}
+                </button>
+              ))}
+            </div>
+          </div>
+          
+          {/* Author Pills */}
+          <div className="flex flex-col md:flex-row md:items-start gap-3 md:gap-6">
+            <span className="text-[10px] font-black tracking-widest text-[#3c8ebd] uppercase shrink-0 md:w-20 md:pt-2">Author</span>
+            <div className="flex flex-wrap gap-2">
+              {authors.map(a => (
+                <button
+                  key={a}
+                  onClick={() => setSelectedAuthor(a)}
+                  className={`px-3.5 py-1.5 text-xs sm:text-sm font-bold tracking-wider rounded-lg transition-all ${
+                    selectedAuthor === a
+                      ? 'bg-[#0b2636] text-white shadow-md shadow-[#0b2636]/20 border-transparent'
+                      : 'bg-white border border-[#cbd6dc] text-[#0b2636]/60 hover:border-[#0b2636]/50 hover:text-[#0b2636]'
+                  }`}
+                >
+                  {a === 'ALL' ? 'All Authors' : a}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
       
@@ -443,8 +477,8 @@ const WriteupsView = ({ onPostClick, writeups = [], isLoading }) => {
           {filteredWriteups.map((post, index) => <WriteupCard key={post.id || `${post.title}-${index}`} post={post} onClick={onPostClick} />)}
         </div>
       ) : (
-        <div className="py-12 sm:py-20 text-center text-[#0b2636]/50 px-4">
-          <div className="text-4xl sm:text-6xl mb-4">🔍</div>
+        <div className="py-12 sm:py-20 text-center text-[#0b2636]/50 px-4 bg-[#cbd6dc]/10 rounded-xl border border-[#cbd6dc]/40 border-dashed">
+          <div className="text-4xl sm:text-5xl mb-4 opacity-50">🔍</div>
           <h3 className="text-lg sm:text-xl font-bold mb-2">No writeups found</h3>
           <p className="text-sm sm:text-base">Try adjusting your search or filters.</p>
         </div>
