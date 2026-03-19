@@ -5,7 +5,7 @@
       "category": "crypto",
       "solved_date": "2026-03-15",
       "author": "timothy0509",
-      "path": "HKCERT CTF 2025/crypto/Bivariate Copper.md",
+      "path": "https://raw.githubusercontent.com/timothy0509/writeups/refs/heads/main/HKCERT%20CTF%202025/crypto/Bivariate%20Copper.md",
       "tags": [],
       "notes": "",
       "collection": "HKCERT CTF 2025"
@@ -17,7 +17,7 @@
       "category": "web",
       "solved_date": "2026-03-15",
       "author": "timothy0509",
-      "path": "HKUST Firebird CTF 2026/web/Firebird Chan Fanclub 2.md",
+      "path": "https://raw.githubusercontent.com/timothy0509/writeups/refs/heads/main/HKUST%20Firebird%20CTF%202026/web/Firebird%20Chan%20Fanclub%202.md",
       "tags": [],
       "notes": "",
       "collection": "HKUST Firebird CTF 2026"
@@ -131,7 +131,7 @@
       "category": "misc",
       "solved_date": "2026-03-16",
       "author": "timothy0509",
-      "path": "PolyU x NuttyShell Cybersecurity CTF 2026/misc/私칸字本当上手.md",
+      "path": "https://raw.githubusercontent.com/timothy0509/writeups/refs/heads/main/PolyU%20x%20NuttyShell%20Cybersecurity%20CTF%202026/misc/%E7%A7%81%EC%B9%B8%E5%AD%97%E6%9C%AC%E5%BD%93%E4%B8%8A%E6%89%8B.md",
       "tags": [],
       "notes": "",
       "collection": "PolyU x NuttyShell Cybersecurity CTF 2026"
@@ -141,7 +141,7 @@
       "category": "pwn",
       "solved_date": "2026-03-16",
       "author": "timothy0509",
-      "path": "PolyU x NuttyShell Cybersecurity CTF 2026/pwn/Secure Communication (Advanced).md",
+      "path": "https://raw.githubusercontent.com/timothy0509/writeups/refs/heads/main/PolyU%20x%20NuttyShell%20Cybersecurity%20CTF%202026/pwn/Secure%20Communication%20%28Advanced%29.md",
       "tags": [],
       "notes": "",
       "collection": "PolyU x NuttyShell Cybersecurity CTF 2026"
@@ -151,7 +151,7 @@
       "category": "pwn",
       "solved_date": "2026-03-16",
       "author": "timothy0509",
-      "path": "PolyU x NuttyShell Cybersecurity CTF 2026/pwn/Secure Communication.md",
+      "path": "https://raw.githubusercontent.com/timothy0509/writeups/refs/heads/main/PolyU%20x%20NuttyShell%20Cybersecurity%20CTF%202026/pwn/Secure%20Communication.md",
       "tags": [],
       "notes": "",
       "collection": "PolyU x NuttyShell Cybersecurity CTF 2026"
@@ -161,7 +161,7 @@
       "category": "rev",
       "solved_date": "2026-03-16",
       "author": "timothy0509",
-      "path": "PolyU x NuttyShell Cybersecurity CTF 2026/rev/Play with Dinosaur.md",
+      "path": "https://raw.githubusercontent.com/timothy0509/writeups/refs/heads/main/PolyU%20x%20NuttyShell%20Cybersecurity%20CTF%202026/rev/Play%20with%20Dinosaur.md",
       "tags": [],
       "notes": "",
       "collection": "PolyU x NuttyShell Cybersecurity CTF 2026"
@@ -171,7 +171,7 @@
       "category": "rev",
       "solved_date": "2026-03-16",
       "author": "timothy0509",
-      "path": "PolyU x NuttyShell Cybersecurity CTF 2026/rev/oldfashion.md",
+      "path": "https://raw.githubusercontent.com/timothy0509/writeups/refs/heads/main/PolyU%20x%20NuttyShell%20Cybersecurity%20CTF%202026/rev/oldfashion.md",
       "tags": [],
       "notes": "",
       "collection": "PolyU x NuttyShell Cybersecurity CTF 2026"
@@ -181,7 +181,7 @@
       "category": "web",
       "solved_date": "2026-03-16",
       "author": "timothy0509",
-      "path": "PolyU x NuttyShell Cybersecurity CTF 2026/web/React2XSS.md",
+      "path": "https://raw.githubusercontent.com/timothy0509/writeups/refs/heads/main/PolyU%20x%20NuttyShell%20Cybersecurity%20CTF%202026/web/React2XSS.md",
       "tags": [],
       "notes": "",
       "collection": "PolyU x NuttyShell Cybersecurity CTF 2026"
@@ -191,7 +191,7 @@
       "category": "web",
       "solved_date": "2026-03-16",
       "author": "timothy0509",
-      "path": "PolyU x NuttyShell Cybersecurity CTF 2026/web/WordPress Bug Bounty Hunter.md",
+      "path": "https://raw.githubusercontent.com/timothy0509/writeups/refs/heads/main/PolyU%20x%20NuttyShell%20Cybersecurity%20CTF%202026/web/WordPress%20Bug%20Bounty%20Hunter.md",
       "tags": [],
       "notes": "",
       "collection": "PolyU x NuttyShell Cybersecurity CTF 2026"
@@ -203,7 +203,7 @@
       "category": "forensics",
       "solved_date": "2026-03-17",
       "author": "timothy0509",
-      "path": "picoCTF 2019/forensics/Investigative Reversing 2.md",
+      "path": "https://raw.githubusercontent.com/timothy0509/writeups/refs/heads/main/picoCTF%202019/forensics/Investigative%20Reversing%202.md",
       "tags": [],
       "notes": "",
       "collection": "picoCTF 2019"
@@ -213,7 +213,7 @@
       "category": "forensics",
       "solved_date": "2026-03-17",
       "author": "timothy0509",
-      "path": "picoCTF 2019/forensics/Investigative Reversing 3.md",
+      "path": "https://raw.githubusercontent.com/timothy0509/writeups/refs/heads/main/picoCTF%202019/forensics/Investigative%20Reversing%203.md",
       "tags": [],
       "notes": "",
       "collection": "picoCTF 2019"
@@ -223,7 +223,7 @@
       "category": "forensics",
       "solved_date": "2026-03-17",
       "author": "timothy0509",
-      "path": "picoCTF 2019/forensics/Investigative Reversing 4.md",
+      "path": "https://raw.githubusercontent.com/timothy0509/writeups/refs/heads/main/picoCTF%202019/forensics/Investigative%20Reversing%204.md",
       "tags": [],
       "notes": "",
       "collection": "picoCTF 2019"
@@ -233,7 +233,7 @@
       "category": "forensics",
       "solved_date": "2026-03-17",
       "author": "timothy0509",
-      "path": "picoCTF 2019/forensics/Investigative Reversing 1.md",
+      "path": "https://raw.githubusercontent.com/timothy0509/writeups/refs/heads/main/picoCTF%202019/forensics/Investigative%20Reversing%201.md",
       "tags": [],
       "notes": "",
       "collection": "picoCTF 2019"
@@ -243,7 +243,7 @@
       "category": "forensics",
       "solved_date": "2026-03-17",
       "author": "timothy0509",
-      "path": "picoCTF 2019/forensics/Investigative Reversing 0.md",
+      "path": "https://raw.githubusercontent.com/timothy0509/writeups/refs/heads/main/picoCTF%202019/forensics/Investigative%20Reversing%200.md",
       "tags": [],
       "notes": "",
       "collection": "picoCTF 2019"
@@ -255,7 +255,7 @@
       "category": "crypto",
       "solved_date": "2026-03-15",
       "author": "timothy0509",
-      "path": "picoCTF 2022/crypto/Sequences.md",
+      "path": "https://raw.githubusercontent.com/timothy0509/writeups/refs/heads/main/picoCTF%202022/crypto/Sequences.md",
       "tags": [],
       "notes": "",
       "collection": "picoCTF 2022"
@@ -267,7 +267,7 @@
       "category": "web",
       "solved_date": "2026-03-15",
       "author": "timothy0509",
-      "path": "pwnable.hk/web/JSON Weak Token.md",
+      "path": "https://raw.githubusercontent.com/timothy0509/writeups/refs/heads/main/pwnable.hk/web/JSON%20Weak%20Token.md",
       "tags": [],
       "notes": "",
       "collection": "pwnable.hk"
