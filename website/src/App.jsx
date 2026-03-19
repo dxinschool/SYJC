@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { Shield, ChevronRight, ChevronLeft, ArrowRight, User, Search, Instagram, ArrowUp, Filter } from 'lucide-react';
+import katex from 'katex';
+import 'katex/dist/katex.min.css';
 
 // --- SMOOTH SCROLL HOOK ---
 const SmoothScroll = ({ children }) => {
@@ -89,7 +91,7 @@ const SmoothScroll = ({ children }) => {
 // --- MARKDOWN PARSER ---
 const parseInline = (text) => {
   if (!text) return null;
-  const parts = text.split(/(!\[[^\]]*\]\([^)]+\)|`[^`]+`|\*\*[^*]+\*\*|\[[^\]]+\]\([^)]+\))/g);
+  const parts = text.split(/(\$\$[\s\S]+?\$\$|\$[^\$\n]+?\$|!\[[^\]]*\]\([^)]+\)|`[^`]+`|\*\*[^*]+\*\*|\[[^\]]+\]\([^)]+\))/g);
   
   return parts.map((part, index) => {
     if (!part) return null;
@@ -102,6 +104,25 @@ const parseInline = (text) => {
           {imgMatch[1] && <span className="block text-sm text-[#0b2636]/50 mt-2 font-medium">{imgMatch[1]}</span>}
         </span>
       );
+    }
+    const mathBlockMatch = part.match(/^\$\$([\s\S]+)\$\$$/);
+    if (mathBlockMatch) {
+      try {
+        const html = katex.renderToString(mathBlockMatch[1], { displayMode: true, throwOnError: false });
+        return <span key={index} dangerouslySetInnerHTML={{ __html: html }} />;
+      } catch (e) {
+        return <span key={index}>{mathBlockMatch[1]}</span>;
+      }
+    }
+
+    const mathInlineMatch = part.match(/^\$([^\$]+)\$$/);
+    if (mathInlineMatch) {
+      try {
+        const html = katex.renderToString(mathInlineMatch[1], { displayMode: false, throwOnError: false });
+        return <span key={index} dangerouslySetInnerHTML={{ __html: html }} />;
+      } catch (e) {
+        return <span key={index}>{mathInlineMatch[1]}</span>;
+      }
     }
     
     if (part.startsWith('`') && part.endsWith('`')) {
@@ -208,17 +229,62 @@ const parseMarkdown = (mdString) => {
   return elements;
 };
 
+// --- HELPERS: normalize category and collection names ---
+const categoryMap = {
+  'rev': 'Reverse Engineering',
+  'misc': 'Miscellaneous',
+  'pwn': 'Pwn',
+  'web': 'Web Exploitation',
+  'crypto': 'Crypto',
+  'forensics': 'Forensics',
+  'ai': 'Artificial Intelligence',
+  'artificial intelligence': 'Artificial Intelligence',
+  'pen': 'Penetration',
+  'penetraion': 'Penetration'
+};
+
+const collectionAliases = {
+  'PUCTF26': 'PolyU x NuttyShell Cybersecurity CTF 2026'
+};
+
+const normalizeCategory = (cat) => {
+  if (!cat) return 'Uncategorized';
+  const s = String(cat).trim();
+  const key = s.toLowerCase();
+  if (categoryMap[key]) return categoryMap[key];
+  // Title-case fallback
+  return s.replace(/[-_]+/g, ' ').split(' ').map(w => w ? (w[0].toUpperCase() + w.slice(1)) : '').join(' ').trim();
+};
+
+const normalizeCollection = (col) => {
+  if (!col) return null;
+  // prefer alias if exists, otherwise trim and return
+  const key = String(col).trim();
+  return collectionAliases[key] || key;
+};
+
+
 // --- COMPONENTS ---
 const WriteupCard = ({ post, onClick }) => (
   <div 
     onClick={() => onClick(post)}
     className="group cursor-pointer border border-transparent border-b-slate-200/60 hover:border-[#3c8ebd] hover:shadow-lg py-6 sm:py-8 flex flex-col md:flex-row gap-4 md:gap-8 hover:bg-white transition-all px-4 sm:px-6 -mx-4 sm:-mx-6 rounded-xl"
   >
-    <div className="md:w-40 shrink-0 flex flex-row md:flex-col gap-3 md:gap-2 items-center md:items-start pt-1">
+    <div className="md:w-48 shrink-0 flex flex-row md:flex-col gap-3 md:gap-2 items-center md:items-start pt-1">
       <span className="text-[#3c8ebd] font-black tracking-wider text-xs sm:text-sm">{post.date}</span>
-      <span className="bg-[#0b2636] text-white text-[9px] sm:text-[10px] font-black tracking-widest px-2 sm:px-2.5 py-1 uppercase w-max">
+      {post.collection && (
+        <span className="text-[#0b2636]/60 font-bold tracking-widest text-[9px] sm:text-[10px] uppercase hidden md:block">
+          {post.collection}
+        </span>
+      )}
+      <span className="bg-[#0b2636] text-white text-[9px] sm:text-[10px] font-black tracking-widest px-2 sm:px-2.5 py-1 uppercase w-max mt-1 md:mt-0">
         {post.category}
       </span>
+      {post.collection && (
+        <span className="text-[#0b2636]/60 font-bold tracking-widest text-[9px] sm:text-[10px] uppercase md:hidden border-l border-[#0b2636]/20 pl-3 mt-1">
+          {post.collection}
+        </span>
+      )}
     </div>
     
     <div className="flex-1 min-w-0">
@@ -388,9 +454,11 @@ const WriteupsView = ({ onPostClick, writeups = [], isLoading }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('ALL');
   const [selectedAuthor, setSelectedAuthor] = useState('ALL');
+  const [selectedCollection, setSelectedCollection] = useState('ALL');
 
   const categories = ['ALL', ...new Set(writeups.map(w => w.category || 'Uncategorized'))];
   const authors = ['ALL', ...new Set(writeups.map(w => w.author || 'Anonymous'))];
+  const collections = ['ALL', ...new Set(writeups.map(w => w.collection).filter(Boolean))];
 
   const filteredWriteups = writeups.filter(post => {
     const titleMatch = post.title?.toLowerCase().includes(searchQuery.toLowerCase()) || false;
@@ -398,8 +466,9 @@ const WriteupsView = ({ onPostClick, writeups = [], isLoading }) => {
     const matchesSearch = titleMatch || excerptMatch;
     const matchesCategory = selectedCategory === 'ALL' || post.category === selectedCategory;
     const matchesAuthor = selectedAuthor === 'ALL' || post.author === selectedAuthor;
+    const matchesCollection = selectedCollection === 'ALL' || post.collection === selectedCollection;
     
-    return matchesSearch && matchesCategory && matchesAuthor;
+    return matchesSearch && matchesCategory && matchesAuthor && matchesCollection;
   });
 
   return (
@@ -425,9 +494,31 @@ const WriteupsView = ({ onPostClick, writeups = [], isLoading }) => {
         </div>
         
         <div className="flex flex-col gap-6">
+          {/* Competition Pills */}
+          {collections.length > 1 && (
+            <div className="flex flex-col md:flex-row md:items-start gap-3 md:gap-6">
+              <span className="text-[10px] font-black tracking-widest text-[#3c8ebd] uppercase shrink-0 md:w-28 md:pt-2">Competition</span>
+              <div className="flex flex-wrap gap-2">
+                {collections.map(c => (
+                  <button
+                    key={c}
+                    onClick={() => setSelectedCollection(c)}
+                    className={`px-3.5 py-1.5 text-xs sm:text-sm font-bold tracking-wider rounded-lg transition-all ${
+                      selectedCollection === c
+                        ? 'bg-[#3c8ebd] text-white shadow-md shadow-[#3c8ebd]/20 border-transparent'
+                        : 'bg-white border border-[#cbd6dc] text-[#0b2636]/60 hover:border-[#3c8ebd]/50 hover:text-[#0b2636]'
+                    }`}
+                  >
+                    {c === 'ALL' ? 'All Competitions' : c}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          
           {/* Category Pills */}
           <div className="flex flex-col md:flex-row md:items-start gap-3 md:gap-6">
-            <span className="text-[10px] font-black tracking-widest text-[#3c8ebd] uppercase shrink-0 md:w-20 md:pt-2">Category</span>
+            <span className="text-[10px] font-black tracking-widest text-[#3c8ebd] uppercase shrink-0 md:w-28 md:pt-2">Category</span>
             <div className="flex flex-wrap gap-2">
               {categories.map(c => (
                 <button
@@ -447,7 +538,7 @@ const WriteupsView = ({ onPostClick, writeups = [], isLoading }) => {
           
           {/* Author Pills */}
           <div className="flex flex-col md:flex-row md:items-start gap-3 md:gap-6">
-            <span className="text-[10px] font-black tracking-widest text-[#3c8ebd] uppercase shrink-0 md:w-20 md:pt-2">Author</span>
+            <span className="text-[10px] font-black tracking-widest text-[#3c8ebd] uppercase shrink-0 md:w-28 md:pt-2">Author</span>
             <div className="flex flex-wrap gap-2">
               {authors.map(a => (
                 <button
@@ -535,6 +626,11 @@ const PostDetailView = ({ post, onBack }) => {
           <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
             <span className="bg-[#3b8dbd] text-white px-2.5 sm:px-3 py-1 text-[9px] sm:text-[10px] font-black tracking-widest uppercase">{post.category}</span>
             <span className="text-[#0b2636]/40 font-bold text-[10px] sm:text-[11px] tracking-widest">{post.date}</span>
+            {post.collection && (
+              <span className="text-[#0b2636]/40 font-bold text-[10px] sm:text-[11px] tracking-widest px-3 border-l-2 border-[#0b2636]/10 uppercase">
+                {post.collection}
+              </span>
+            )}
           </div>
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-[#0b2636] tracking-tighter mb-4 sm:mb-6 leading-tight break-words">{post.title}</h1>
           <div className="flex items-center gap-2.5 sm:gap-3">
@@ -654,35 +750,71 @@ export default function App() {
       })
       .then(data => {
         let parsedArray = [];
+
         if (Array.isArray(data)) {
+          // Legacy: raw array of writeups
           parsedArray = data;
         } else if (data && typeof data === 'object') {
+          // If a top-level "writeups" array exists, include it first
           if (Array.isArray(data.writeups)) {
-            parsedArray = data.writeups;
-          } else {
-            Object.values(data).forEach(val => {
-              if (Array.isArray(val)) parsedArray.push(...val);
-            });
-            if (parsedArray.length === 0 && Object.keys(data).length > 0) {
-              parsedArray = [data];
+            parsedArray.push(...data.writeups.map(w => ({ ...w })));
+          }
+
+          // Merge any top-level competition keys that are arrays (preferred new format)
+          Object.entries(data).forEach(([key, val]) => {
+            if (Array.isArray(val)) {
+              // Skip the already-handled "writeups" key
+              if (key === 'writeups') return;
+              val.forEach(item => {
+                const itemCopy = { ...item };
+                // Only set collection if not already present
+                if (!itemCopy.collection) itemCopy.collection = key;
+                parsedArray.push(itemCopy);
+              });
             }
+          });
+
+          // If nothing was found, fall back to treating the object as a single entry
+          if (parsedArray.length === 0 && Object.keys(data).length > 0) {
+            parsedArray = [data];
           }
         }
+
+        // Deduplicate entries by `path` (preferred) or `challenge+collection`
+        const seen = new Set();
+        const deduped = [];
+        parsedArray.forEach(p => {
+          const pathKey = (p.path || '').trim();
+          const idKey = pathKey || `${(p.challenge||'').trim()}::${(p.collection||'').trim()}`;
+          if (!idKey) return;
+          if (!seen.has(idKey)) {
+            seen.add(idKey);
+            deduped.push(p);
+          }
+        });
+        parsedArray = deduped;
         
         const normalizedData = parsedArray.map((post, index) => {
-          const rawUrl = post.path 
-            ? `https://raw.githubusercontent.com/dxinschool/SYJC/main/CTF/${post.path}`
-            : (post.url || post.link || '');
+          // Prefer an absolute `url` if provided, then absolute `path`, then
+          // treat `path` as a repo-relative path inside this repo.
+          const isAbsolute = (s) => typeof s === 'string' && /^https?:\/\//i.test(s);
+          let rawUrl = '';
+          if (isAbsolute(post.url)) rawUrl = post.url;
+          else if (isAbsolute(post.path)) rawUrl = post.path;
+          else if (post.path) rawUrl = `https://raw.githubusercontent.com/dxinschool/SYJC/main/CTF/${post.path}`;
+          else rawUrl = post.url || post.link || '';
 
           return {
             ...post,
             id: post.id || `writeup-${index}`,
             title: post.challenge || post.title || post.name || 'Untitled Writeup',
-            category: post.category || post.type || 'CTF',
-            author: post.author || post.writer || 'SYJC Team',
-            excerpt: post.notes || post.excerpt || post.description || 'No summary available.',
+            category: normalizeCategory(post.category || post.type || 'CTF'),
+            author: (post.author || post.writer || 'SYJC Team').toString().trim(),
+            excerpt: post.notes || post.excerpt || post.description || 'No detailed notes provided.',
             date: post.solved_date || post.date || post.time || new Date().getFullYear().toString(),
-            url: rawUrl
+            url: rawUrl,
+            collection: normalizeCollection(post.collection || null),
+            tags: post.tags || []
           };
         });
         
