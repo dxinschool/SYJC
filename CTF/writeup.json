@@ -1,8 +1,9 @@
 {
   "generated_at": "2026-03-08",
-  "collection": "PUCTF26",
   "generated_by": "assistant",
-  "writeups": [
+  "notes": "Format updated to support multiple competitions. Each competition is represented by a top-level key mapping to an array of writeups.",
+
+  "PUCTF26": [
     {
       "challenge": "EncryptFile",
       "category": "Reverse Engineering",
@@ -47,6 +48,59 @@
       "path": "PUCTF26/The_Secret_of_The_Emanator_of_Elation.md",
       "tags": [],
       "notes": ""
+    }
+  ],
+
+  "writeups": [
+    {
+      "challenge": "EncryptFile",
+      "category": "Reverse Engineering",
+      "solved_date": "2026-03-08",
+      "author": "DXuwu",
+      "path": "PUCTF26/EncryptFile.md",
+      "tags": [],
+      "notes": "",
+      "collection": "PUCTF26"
+    },
+    {
+      "challenge": "good_k1k1_bad_k1k1",
+      "category": "Artificial Intelligence",
+      "solved_date": "2026-03-08",
+      "author": "DXuwu",
+      "path": "PUCTF26/good_k1k1_bad_k1k1.md",
+      "tags": [],
+      "notes": "",
+      "collection": "PUCTF26"
+    },
+    {
+      "challenge": "It_Takes_Two",
+      "category": "Penetration",
+      "solved_date": "2026-03-08",
+      "author": "DXuwu",
+      "path": "PUCTF26/It_Takes_Two.md",
+      "tags": [],
+      "notes": "",
+      "collection": "PUCTF26"
+    },
+    {
+      "challenge": "Leaky_Revenge",
+      "category": "Web Exploitation",
+      "solved_date": "2026-03-08",
+      "author": "DXuwu",
+      "path": "PUCTF26/Leaky_Revenge.md",
+      "tags": [],
+      "notes": "",
+      "collection": "PUCTF26"
+    },
+    {
+      "challenge": "The_Secret_of_The_Emanator_of_Elation",
+      "category": "Forensics",
+      "solved_date": "2026-03-08",
+      "author": "DXuwu",
+      "path": "PUCTF26/The_Secret_of_The_Emanator_of_Elation.md",
+      "tags": [],
+      "notes": "",
+      "collection": "PUCTF26"
     }
   ]
 }
