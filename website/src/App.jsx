@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { Shield, ChevronRight, ChevronLeft, ArrowRight, User, Search, Instagram, ArrowUp, Filter } from 'lucide-react';
 import katex from 'katex';
 import 'katex/dist/katex.min.css';
+import homeImg from '../assets/home.png';
 
 // --- SMOOTH SCROLL HOOK ---
 const SmoothScroll = ({ children }) => {
@@ -449,7 +450,10 @@ const HomeView = ({ navigate, currentPage }) => (
       </div>
 
       <div className="flex-1 relative h-[70vh] lg:h-full flex items-center justify-center overflow-hidden px-4 lg:px-8">
-        <div className="absolute inset-0 z-0 bg-[url('https://scontent-hkg1-2.cdninstagram.com/v/t51.82787-15/627934398_17862824781583144_676731908360055250_n.jpg?stp=dst-jpg_e35_tt6&_nc_cat=104&ig_cache_key=MzgyNjY3MjQ2NDczOTQyMzQ5Ng%3D%3D.3-ccb7-5&ccb=7-5&_nc_sid=58cdad&efg=eyJ2ZW5jb2RlX3RhZyI6InhwaWRzLjE0NDB4MTkyMC5zZHIuQzMifQ%3D%3D&_nc_ohc=Y1BvmLJPAVwQ7kNvwFnnKeU&_nc_oc=AdkR6-ZanVjDayw0txOgGUVUw96Dwk4d_un0TNEtsn7OIUDAiIGjYuXztGEpQT3iXkI&_nc_ad=z-m&_nc_cid=0&_nc_zt=23&_nc_ht=scontent-hkg1-2.cdninstagram.com&_nc_gid=EK-ck1zYkUX-kKcSvYQ7mQ&_nc_ss=8&oh=00_AfySCFf4aojj1-4320RgEyqEd4NmWhltzgyeueWG-XsmLQ&oe=69C03698')] bg-cover bg-center opacity-80 transition-transform duration-1000 group-hover:scale-105"></div>
+        <div
+          className="absolute inset-0 z-0 bg-cover bg-center opacity-80 transition-transform duration-1000 group-hover:scale-105"
+          style={{ backgroundImage: `url(${homeImg})` }}
+        ></div>
         <div className="absolute inset-0 z-0 bg-gradient-to-t lg:bg-gradient-to-l from-[#0b1820] via-[#0b1820]/60 to-[#0b1820]/80"></div>
         
         <div className="z-10 text-center flex flex-col items-center">
@@ -784,95 +788,94 @@ export default function App() {
 
   useEffect(() => {
     setIsLoadingWriteups(true);
+    const parseAndSet = (data) => {
+      let parsedArray = [];
+
+      if (Array.isArray(data)) {
+        parsedArray = data;
+      } else if (data && typeof data === 'object') {
+        if (Array.isArray(data.writeups)) {
+          parsedArray.push(...data.writeups.map(w => ({ ...w })));
+        }
+
+        Object.entries(data).forEach(([key, val]) => {
+          if (Array.isArray(val)) {
+            if (key === 'writeups') return;
+            val.forEach(item => {
+              const itemCopy = { ...item };
+              if (!itemCopy.collection) itemCopy.collection = key;
+              parsedArray.push(itemCopy);
+            });
+          }
+        });
+
+        if (parsedArray.length === 0 && Object.keys(data).length > 0) {
+          parsedArray = [data];
+        }
+      }
+
+      const seen = new Set();
+      const deduped = [];
+      parsedArray.forEach(p => {
+        const pathKey = (p.path || '').trim();
+        const idKey = pathKey || `${(p.challenge||'').trim()}::${(p.collection||'').trim()}`;
+        if (!idKey) return;
+        if (!seen.has(idKey)) {
+          seen.add(idKey);
+          deduped.push(p);
+        }
+      });
+      parsedArray = deduped;
+
+      const normalizedData = parsedArray.map((post, index) => {
+        let rawUrl = '';
+        if (post.path) {
+          if (typeof post.path === 'string' && /^https?:\/\//i.test(post.path)) {
+            rawUrl = post.path;
+          } else {
+            rawUrl = `https://raw.githubusercontent.com/dxinschool/SYJC/main/CTF/${post.path}`;
+          }
+        } else {
+          rawUrl = post.url || post.link || '';
+        }
+
+        return {
+          ...post,
+          id: post.id || `writeup-${index}`,
+          title: post.challenge || post.title || post.name || 'Untitled Writeup',
+          category: normalizeCategory(post.category || post.type || 'CTF'),
+          author: (post.author || post.writer || 'SYJC Team').toString().trim(),
+          excerpt: post.notes || post.excerpt || post.description || 'No detailed notes provided.',
+          date: post.solved_date || post.date || post.time || new Date().getFullYear().toString(),
+          url: rawUrl,
+          collection: normalizeCollection(post.collection || null),
+          tags: post.tags || []
+        };
+      });
+
+      setWriteups(normalizedData);
+      setIsLoadingWriteups(false);
+    };
+
     fetch('https://raw.githubusercontent.com/dxinschool/SYJC/main/CTF/writeup.json?t=' + Date.now())
       .then(res => {
         if (!res.ok) throw new Error("Failed to fetch JSON");
         return res.json();
       })
-      .then(data => {
-        let parsedArray = [];
-
-        if (Array.isArray(data)) {
-          // Legacy: raw array of writeups
-          parsedArray = data;
-        } else if (data && typeof data === 'object') {
-          // If a top-level "writeups" array exists, include it first
-          if (Array.isArray(data.writeups)) {
-            parsedArray.push(...data.writeups.map(w => ({ ...w })));
-          }
-
-          // Merge any top-level competition keys that are arrays (preferred new format)
-          Object.entries(data).forEach(([key, val]) => {
-            if (Array.isArray(val)) {
-              // Skip the already-handled "writeups" key
-              if (key === 'writeups') return;
-              val.forEach(item => {
-                const itemCopy = { ...item };
-                // Only set collection if not already present
-                if (!itemCopy.collection) itemCopy.collection = key;
-                parsedArray.push(itemCopy);
-              });
-            }
-          });
-
-          // If nothing was found, fall back to treating the object as a single entry
-          if (parsedArray.length === 0 && Object.keys(data).length > 0) {
-            parsedArray = [data];
-          }
-        }
-
-        // Deduplicate entries by `path` (preferred) or `challenge+collection`
-        const seen = new Set();
-        const deduped = [];
-        parsedArray.forEach(p => {
-          const pathKey = (p.path || '').trim();
-          const idKey = pathKey || `${(p.challenge||'').trim()}::${(p.collection||'').trim()}`;
-          if (!idKey) return;
-          if (!seen.has(idKey)) {
-            seen.add(idKey);
-            deduped.push(p);
-          }
-        });
-        parsedArray = deduped;
-        
-        const normalizedData = parsedArray.map((post, index) => {
-          // Construct raw URL:
-          // - If `post.path` is present and absolute, use it directly.
-          // - If `post.path` is present and relative, treat it as repo-relative
-          //   inside dxinschool/SYJC under `CTF/` (same as the blog App.jsx approach).
-          // - Otherwise fall back to `post.url` or `post.link`.
-          let rawUrl = '';
-          if (post.path) {
-            if (typeof post.path === 'string' && /^https?:\/\//i.test(post.path)) {
-              rawUrl = post.path;
-            } else {
-              rawUrl = `https://raw.githubusercontent.com/dxinschool/SYJC/main/CTF/${post.path}`;
-            }
-          } else {
-            rawUrl = post.url || post.link || '';
-          }
-
-          return {
-            ...post,
-            id: post.id || `writeup-${index}`,
-            title: post.challenge || post.title || post.name || 'Untitled Writeup',
-            category: normalizeCategory(post.category || post.type || 'CTF'),
-            author: (post.author || post.writer || 'SYJC Team').toString().trim(),
-            excerpt: post.notes || post.excerpt || post.description || 'No detailed notes provided.',
-            date: post.solved_date || post.date || post.time || new Date().getFullYear().toString(),
-            url: rawUrl,
-            collection: normalizeCollection(post.collection || null),
-            tags: post.tags || []
-          };
-        });
-        
-        setWriteups(normalizedData);
-        setIsLoadingWriteups(false);
-      })
+      .then(data => parseAndSet(data))
       .catch(err => {
-        console.error("Failed to load writeups:", err);
-        setWriteups([]);
-        setIsLoadingWriteups(false);
+        console.warn('Primary JSON fetch failed, attempting local fallback:', err);
+        fetch('/CTF/writeup.json?t=' + Date.now())
+          .then(res => {
+            if (!res.ok) throw new Error('Local JSON not found');
+            return res.json();
+          })
+          .then(localData => parseAndSet(localData))
+          .catch(localErr => {
+            console.error('Failed to load local writeups fallback:', localErr);
+            setWriteups([]);
+            setIsLoadingWriteups(false);
+          });
       });
   }, []);
 
